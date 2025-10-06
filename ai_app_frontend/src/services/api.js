@@ -1,10 +1,21 @@
 /**
  * API Service for communicating with the backend
  * Handles all HTTP requests to the FastAPI backend
+ * 
+ * Configuration:
+ * - Uses REACT_APP_BACKEND_URL environment variable
+ * - Default fallback: http://localhost:3001
+ * - Includes timeout and error handling for network issues
+ * 
+ * Important: Restart the React dev server after changing .env variables
  */
 
 // Get backend URL from environment variable with fallback
 const API_BASE_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:3001';
+
+// Log the API URL being used (helps with debugging)
+console.log('API Base URL:', API_BASE_URL);
+=======
 
 // PUBLIC_INTERFACE
 /**

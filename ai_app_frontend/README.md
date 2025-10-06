@@ -45,7 +45,8 @@ The frontend requires the following environment variable:
 
 **Important**: 
 - All React environment variables must start with `REACT_APP_`
-- Changes to `.env` require restarting the development server
+- **Changes to `.env` REQUIRE restarting the development server** (stop with Ctrl+C and run `npm start` again)
+- The frontend runs on port 3000, backend must be on port 3001 for local development
 
 ### Setting Up Environment Variables
 
@@ -56,14 +57,14 @@ The frontend requires the following environment variable:
 
 2. Edit `.env` with your backend URL:
    ```bash
-   # For local development (default)
+   # For local development (default - backend on port 3001, frontend on port 3000)
    REACT_APP_BACKEND_URL=http://localhost:3001
 
    # For production deployment
    REACT_APP_BACKEND_URL=https://your-backend-api.com
    ```
 
-3. Restart the development server if it's already running
+3. **IMPORTANT:** Restart the development server if it's already running (stop with Ctrl+C, then `npm start`)
 
 ## Installation & Setup
 
@@ -284,11 +285,12 @@ The frontend handles various error scenarios:
    ```
    Should be: `REACT_APP_BACKEND_URL=http://localhost:3001`
 
-3. **Restart frontend after changing .env:**
+3. **Restart frontend after changing .env (MANDATORY):**
    ```bash
-   # Stop server (Ctrl+C)
+   # Stop server with Ctrl+C, then:
    npm start
    ```
+   **Note:** React only reads .env variables at startup. Changes will not take effect until you restart.
 
 4. **Check for CORS errors in browser console:**
    - If you see CORS errors, check backend CORS configuration
@@ -463,6 +465,19 @@ The frontend handles various error scenarios:
    # Wrong:
    REACT_APP_BACKEND_URL = http://localhost:3001
    ```
+
+## Local Setup - Port Configuration
+
+For local development, the application uses these ports:
+- **Frontend**: http://localhost:3000 (React development server)
+- **Backend**: http://localhost:3001 (FastAPI server)
+
+**Important Configuration Checklist:**
+1. ✅ Frontend `.env` contains: `REACT_APP_BACKEND_URL=http://localhost:3001`
+2. ✅ Backend `.env` contains: `CORS_ORIGINS=http://localhost:3000`
+3. ✅ Backend is running on port 3001: `uvicorn src.api.main:app --host 0.0.0.0 --port 3001`
+4. ✅ Frontend is running on port 3000: `npm start` (default)
+5. ✅ After changing `.env` files, restart both services
 
 ## Startup Order
 
