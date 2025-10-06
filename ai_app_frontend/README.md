@@ -2,6 +2,12 @@
 
 React-based frontend application for the AI Query Assistant. This application provides a clean, intuitive interface for users to ask questions and receive AI-generated answers from the backend service.
 
+## Local Development Setup
+
+**Important: For local development, use these exact ports:**
+- **Frontend**: http://localhost:3000 (React dev server)
+- **Backend**: http://localhost:3001 (FastAPI server)
+
 ## Features
 
 - **Simple Question Interface**: Clean form for submitting questions
@@ -26,6 +32,7 @@ ai_app_frontend/
 │   │   └── api.js          # Backend API integration
 │   └── styles/             # CSS styling
 ├── package.json            # Dependencies and scripts
+├── .env                    # Environment configuration (localhost)
 └── .env.example           # Environment variable template
 ```
 
@@ -33,38 +40,41 @@ ai_app_frontend/
 
 - **Node.js**: 14.x or higher
 - **npm**: 6.x or higher (comes with Node.js)
-- **Backend API**: The backend service must be running (see backend README)
+- **Backend API**: The backend service must be running on port 3001
 
 ## Environment Variables
 
-The frontend requires the following environment variable:
+The frontend requires **only one** environment variable for local development:
 
-| Variable | Description | Default |
-|----------|-------------|---------|
+| Variable | Description | Local Value |
+|----------|-------------|-------------|
 | `REACT_APP_BACKEND_URL` | URL of the backend API server | `http://localhost:3001` |
 
-**Important**: 
+**Important Notes:**
 - All React environment variables must start with `REACT_APP_`
-- **Changes to `.env` REQUIRE restarting the development server** (stop with Ctrl+C and run `npm start` again)
-- The frontend runs on port 3000, backend must be on port 3001 for local development
+- **Changes to `.env` REQUIRE restarting the development server** (Ctrl+C then `npm start`)
+- The `.env` file should contain ONLY `REACT_APP_BACKEND_URL` for frontend
+- Backend-specific variables (DATABASE_URL, GEMINI_API_KEY, CORS_ORIGINS) belong in backend's `.env`
 
 ### Setting Up Environment Variables
 
-1. Copy the example file:
-   ```bash
-   cp .env.example .env
-   ```
+The `.env` file is already configured for local development with:
+```bash
+REACT_APP_BACKEND_URL=http://localhost:3001
+```
 
-2. Edit `.env` with your backend URL:
-   ```bash
-   # For local development (default - backend on port 3001, frontend on port 3000)
-   REACT_APP_BACKEND_URL=http://localhost:3001
+**Sanity Check:** If you see any of these variables in the frontend `.env`, **remove them**:
+- ❌ `REACT_APP_GEMINI_API_KEY` (belongs in backend)
+- ❌ `REACT_APP_DATABASE_URL` (belongs in backend)
+- ❌ `REACT_APP_CORS_ORIGINS` (belongs in backend)
+- ❌ `REACT_APP_REACT_APP_BACKEND_URL` (duplicate/typo)
 
-   # For production deployment
-   REACT_APP_BACKEND_URL=https://your-backend-api.com
-   ```
-
-3. **IMPORTANT:** Restart the development server if it's already running (stop with Ctrl+C, then `npm start`)
+**For production deployment:**
+Update `.env` with your production backend URL, then rebuild:
+```bash
+REACT_APP_BACKEND_URL=https://your-backend-api.com
+npm run build
+```
 
 ## Installation & Setup
 
@@ -83,22 +93,18 @@ This will install:
 - React Scripts (Create React App tooling)
 - All required dependencies
 
-### Step 2: Configure Environment
+### Step 2: Verify Environment Configuration
 
 ```bash
-# Copy environment template
-cp .env.example .env
-
-# Edit .env if needed (optional for local development)
-nano .env  # or use your preferred editor
+# Check .env file contains only the backend URL
+cat .env
+# Should show: REACT_APP_BACKEND_URL=http://localhost:3001
 ```
-
-The default configuration (`http://localhost:3001`) works for local development if the backend is running on the default port.
 
 ### Step 3: Start Development Server
 
 ```bash
-# Start the development server
+# Start the development server (port 3000)
 npm start
 ```
 
@@ -118,31 +124,36 @@ webpack compiled successfully
 ```
 
 The application will:
-- Open automatically in your default browser
-- Be available at `http://localhost:3000`
+- Open automatically in your default browser at http://localhost:3000
 - Hot-reload when you make changes to the code
+- Log the backend URL being used (check browser console)
 
 ## Usage
 
-### Using the Application
+### Local Development Workflow
 
-1. **Start the Backend**: Ensure the backend API is running on port 3001
+1. **Start Backend First** (in backend directory):
    ```bash
-   # In the backend directory
+   cd ../ai_app_backend
    uvicorn src.api.main:app --host 0.0.0.0 --port 3001 --reload
    ```
 
-2. **Start the Frontend**: Run `npm start` (if not already running)
+2. **Start Frontend** (in frontend directory):
+   ```bash
+   cd ai_app_frontend
+   npm start
+   ```
 
-3. **Ask Questions**:
-   - Type your question in the input field
+3. **Verify Connection**:
+   - Open browser console (F12)
+   - Look for: `API Base URL: http://localhost:3001`
+   - Backend should show CORS configured for `http://localhost:3000`
+
+4. **Test the Application**:
+   - Type a question in the input field
    - Click "Ask AI" or press Enter
    - Wait for the AI-generated response
    - View the answer displayed below the form
-
-4. **Ask Another Question**:
-   - Previous answers are replaced with new ones
-   - Each question is stored in the database via the backend
 
 ### Example Workflow
 
@@ -150,7 +161,7 @@ The application will:
 1. User opens http://localhost:3000
 2. User types: "What is machine learning?"
 3. User clicks "Ask AI"
-4. Frontend shows loading state
+4. Frontend sends POST to http://localhost:3001/ask
 5. Backend processes with Gemini AI
 6. Answer appears on screen
 ```
@@ -159,7 +170,7 @@ The application will:
 
 ### `npm start`
 
-Runs the app in development mode.
+Runs the app in development mode on port 3000.
 - Open http://localhost:3000 to view it in your browser
 - The page will reload when you make changes
 - You will also see any lint errors in the console
@@ -171,8 +182,6 @@ Launches the test runner in interactive watch mode.
 ```bash
 npm test
 ```
-
-See [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
 
 ### `npm run build`
 
@@ -188,21 +197,11 @@ This will:
 - Minify the code
 - Create static files ready for deployment
 
-The build is minified and the filenames include hashes.
-
-**Deploy the `build` folder** to your hosting service.
+**Important:** Make sure `.env` has the correct production backend URL before building!
 
 ### `npm run eject`
 
 **Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you need full control over the build configuration:
-
-```bash
-npm run eject
-```
-
-This will copy all configuration files and dependencies into your project.
 
 ## Styling & Theme
 
@@ -267,38 +266,42 @@ The frontend handles various error scenarios:
 ### Issue 1: "Failed to fetch" or Network Error
 
 **Symptoms:**
-- Error message: "Failed to connect to the backend"
+- Error message: "Cannot connect to backend"
 - Questions don't get responses
 - Browser console shows network errors
 
 **Solutions:**
 
-1. **Verify backend is running:**
+1. **Verify backend is running on port 3001:**
    ```bash
    curl http://localhost:3001/health
+   # Should return: {"status":"healthy",...}
    ```
-   Should return: `{"status": "healthy", ...}`
 
-2. **Check REACT_APP_BACKEND_URL:**
+2. **Check frontend .env has correct backend URL:**
    ```bash
-   cat .env | grep REACT_APP_BACKEND_URL
+   cat .env
+   # Should show: REACT_APP_BACKEND_URL=http://localhost:3001
    ```
-   Should be: `REACT_APP_BACKEND_URL=http://localhost:3001`
 
 3. **Restart frontend after changing .env (MANDATORY):**
    ```bash
    # Stop server with Ctrl+C, then:
    npm start
    ```
-   **Note:** React only reads .env variables at startup. Changes will not take effect until you restart.
+   **Note:** React only reads .env variables at startup!
 
-4. **Check for CORS errors in browser console:**
-   - If you see CORS errors, check backend CORS configuration
-   - Backend should allow `http://localhost:3000`
+4. **Check browser console for logged backend URL:**
+   - Open DevTools (F12) → Console tab
+   - Should see: `API Base URL: http://localhost:3001`
+   - If different, restart frontend
 
-5. **Verify ports:**
-   - Frontend: http://localhost:3000
-   - Backend: http://localhost:3001
+5. **Verify backend CORS allows localhost:3000:**
+   ```bash
+   # In backend directory, check .env:
+   cat .env | grep CORS_ORIGINS
+   # Should include: http://localhost:3000
+   ```
 
 ### Issue 2: CORS Policy Errors
 
@@ -311,73 +314,27 @@ The frontend handles various error scenarios:
 
 1. **Check backend CORS configuration:**
    ```bash
-   # In backend .env file
-   CORS_ORIGINS=http://localhost:3000
-   ```
-
-2. **Restart backend after CORS changes**
-
-3. **Clear browser cache:**
-   - Hard refresh: Ctrl+Shift+R (Windows/Linux) or Cmd+Shift+R (Mac)
-   - Or clear cache in browser settings
-
-4. **Check browser console** for exact error message
-
-### Issue 3: Backend Returns 500 Errors
-
-**Symptoms:**
-- Error message displays in UI
-- Backend logs show errors
-- Status code 500 in network tab
-
-**Common Causes:**
-
-1. **Database not available:**
-   - Check PostgreSQL is running
-   - Verify DATABASE_URL in backend .env
-   - Run backend database init script
-
-2. **Backend not fully started:**
-   - Wait for backend startup to complete
-   - Check backend logs for errors
-
-3. **Backend configuration issue:**
-   - Check all backend environment variables
-   - Verify GEMINI_API_KEY is set
-
-**Solutions:**
-- See backend README troubleshooting section
-- Check backend logs for specific errors
-- Ensure database is initialized
-
-### Issue 4: Gemini API Returns 401/403
-
-**Symptoms:**
-- Error: "AI service is not available"
-- Backend logs show Gemini API errors
-- Answers not generated
-
-**Solutions:**
-
-1. **Verify GEMINI_API_KEY in backend .env:**
-   ```bash
+   # In backend directory:
    cd ../ai_app_backend
-   cat .env | grep GEMINI_API_KEY
+   cat .env | grep CORS_ORIGINS
+   # Should be: CORS_ORIGINS=http://localhost:3000
    ```
 
-2. **Check API key is valid:**
-   - Visit https://makersuite.google.com/app/apikey
-   - Verify key hasn't been revoked
-   - Create new key if needed
+2. **Restart backend after CORS changes:**
+   ```bash
+   # Stop backend (Ctrl+C), then:
+   uvicorn src.api.main:app --host 0.0.0.0 --port 3001 --reload
+   ```
 
-3. **Check API quota:**
-   - Gemini API has rate limits
-   - Wait a few minutes if quota exceeded
-   - Check Google AI Studio for quota status
+3. **Verify frontend is on port 3000:**
+   - Check browser URL bar
+   - Should be: http://localhost:3000
 
-4. **Restart backend** after updating API key
+4. **Hard refresh browser:**
+   - Windows/Linux: Ctrl+Shift+R
+   - Mac: Cmd+Shift+R
 
-### Issue 5: Port 3000 Already in Use
+### Issue 3: Port 3000 Already in Use
 
 **Symptoms:**
 - Error: "Something is already running on port 3000"
@@ -396,40 +353,13 @@ The frontend handles various error scenarios:
    taskkill /PID <PID> /F
    ```
 
-2. **Or use a different port:**
+2. **Or use a different port (not recommended for local dev):**
    ```bash
    PORT=3002 npm start
    ```
-   Note: Update backend CORS_ORIGINS if using different port
+   **Note:** If you change frontend port, update backend CORS_ORIGINS!
 
-### Issue 6: Blank Page or White Screen
-
-**Symptoms:**
-- Browser shows blank/white page
-- No errors in console
-- Build succeeded but nothing displays
-
-**Solutions:**
-
-1. **Check browser console for errors**
-
-2. **Clear browser cache and reload:**
-   ```bash
-   Ctrl+Shift+R  # Hard refresh
-   ```
-
-3. **Rebuild the application:**
-   ```bash
-   rm -rf node_modules build
-   npm install
-   npm start
-   ```
-
-4. **Check for JavaScript errors:**
-   - Open browser DevTools (F12)
-   - Look for errors in Console tab
-
-### Issue 7: Environment Variable Not Working
+### Issue 4: Environment Variable Not Working
 
 **Symptoms:**
 - REACT_APP_BACKEND_URL changes don't take effect
@@ -437,7 +367,7 @@ The frontend handles various error scenarios:
 
 **Solutions:**
 
-1. **Restart development server** (required for .env changes):
+1. **Restart development server (REQUIRED):**
    ```bash
    # Stop server (Ctrl+C)
    npm start
@@ -445,39 +375,78 @@ The frontend handles various error scenarios:
 
 2. **Verify variable name starts with REACT_APP_:**
    ```bash
-   # Correct:
+   # ✓ Correct:
    REACT_APP_BACKEND_URL=http://localhost:3001
    
-   # Wrong (won't work):
+   # ✗ Wrong (won't work):
    BACKEND_URL=http://localhost:3001
    ```
 
-3. **Check .env file is in project root:**
+3. **Check .env file location:**
    ```bash
+   # Should be in frontend root:
    ls -la .env
    ```
 
 4. **No spaces around = sign:**
    ```bash
-   # Correct:
+   # ✓ Correct:
    REACT_APP_BACKEND_URL=http://localhost:3001
    
-   # Wrong:
+   # ✗ Wrong:
    REACT_APP_BACKEND_URL = http://localhost:3001
    ```
 
+5. **Check browser console for logged URL:**
+   - Should match your .env value
+   - If not, server needs restart
+
+### Issue 5: Stray Backend Variables in Frontend .env
+
+**Symptoms:**
+- `.env` file contains variables like GEMINI_API_KEY, DATABASE_URL
+- Confusion about where variables should be set
+
+**Solution:**
+
+**Frontend `.env` should contain ONLY:**
+```bash
+REACT_APP_BACKEND_URL=http://localhost:3001
+```
+
+**Remove these if present (they belong in backend):**
+```bash
+# ❌ Remove from frontend .env:
+REACT_APP_GEMINI_API_KEY=...
+REACT_APP_DATABASE_URL=...
+REACT_APP_CORS_ORIGINS=...
+REACT_APP_REACT_APP_BACKEND_URL=...  # This is a duplicate/typo
+```
+
+Then restart frontend:
+```bash
+npm start
+```
+
 ## Local Setup - Port Configuration
 
-For local development, the application uses these ports:
-- **Frontend**: http://localhost:3000 (React development server)
-- **Backend**: http://localhost:3001 (FastAPI server)
+**Sanity Check Checklist for Local Development:**
 
-**Important Configuration Checklist:**
-1. ✅ Frontend `.env` contains: `REACT_APP_BACKEND_URL=http://localhost:3001`
-2. ✅ Backend `.env` contains: `CORS_ORIGINS=http://localhost:3000`
-3. ✅ Backend is running on port 3001: `uvicorn src.api.main:app --host 0.0.0.0 --port 3001`
-4. ✅ Frontend is running on port 3000: `npm start` (default)
-5. ✅ After changing `.env` files, restart both services
+✅ **Frontend Configuration:**
+- [ ] Frontend `.env` contains ONLY: `REACT_APP_BACKEND_URL=http://localhost:3001`
+- [ ] No backend-specific variables (GEMINI_API_KEY, DATABASE_URL, etc.)
+- [ ] Frontend running on port 3000: `npm start`
+- [ ] Browser console shows: `API Base URL: http://localhost:3001`
+
+✅ **Backend Configuration:**
+- [ ] Backend `.env` contains: `CORS_ORIGINS=http://localhost:3000`
+- [ ] Backend running on port 3001: `uvicorn src.api.main:app --host 0.0.0.0 --port 3001`
+- [ ] Backend health check works: `curl http://localhost:3001/health`
+
+✅ **After Changes:**
+- [ ] Restart frontend after changing frontend `.env`
+- [ ] Restart backend after changing backend `.env`
+- [ ] Hard refresh browser (Ctrl+Shift+R)
 
 ## Startup Order
 
@@ -493,7 +462,7 @@ cd ai_app_backend
 source venv/bin/activate
 uvicorn src.api.main:app --host 0.0.0.0 --port 3001 --reload
 
-# Terminal 2: Frontend
+# Terminal 2: Frontend  
 cd ai_app_frontend
 npm start
 ```
@@ -503,6 +472,10 @@ npm start
 ### Create Production Build
 
 ```bash
+# Update .env with production backend URL
+echo "REACT_APP_BACKEND_URL=https://your-backend-api.com" > .env
+
+# Build
 npm run build
 ```
 
@@ -515,40 +488,6 @@ The `build` folder contains static files that can be deployed to:
 - **Static Hosting**: Netlify, Vercel, GitHub Pages
 - **Cloud Platforms**: AWS S3, Google Cloud Storage, Azure Static Web Apps
 - **Traditional Hosting**: Any web server (Apache, Nginx)
-
-### Environment Variables for Production
-
-Before building for production, update `.env`:
-
-```bash
-REACT_APP_BACKEND_URL=https://your-production-backend.com
-```
-
-Then build:
-
-```bash
-npm run build
-```
-
-### Example Deployment Commands
-
-**Netlify:**
-```bash
-npm run build
-netlify deploy --prod --dir=build
-```
-
-**Vercel:**
-```bash
-npm run build
-vercel --prod
-```
-
-**Static Server (for testing):**
-```bash
-npm install -g serve
-serve -s build -l 3000
-```
 
 ## Browser Support
 
@@ -584,7 +523,7 @@ src/
 │   ├── QuestionForm.js       # Input form for questions
 │   └── ResponseDisplay.js    # Display area for answers
 └── services/
-    └── api.js               # Backend API calls
+    └── api.js               # Backend API calls (uses REACT_APP_BACKEND_URL)
 ```
 
 ## Development Tips
@@ -593,6 +532,7 @@ src/
 2. **Console Logging**: Check browser console for debugging
 3. **Network Tab**: Monitor API requests in DevTools
 4. **React DevTools**: Install browser extension for React debugging
+5. **Check Backend URL**: Console logs the backend URL on startup
 
 ## Support & Resources
 
@@ -626,4 +566,4 @@ Potential features for future versions:
 
 ---
 
-**Note**: This frontend requires the AI Query Assistant backend to be running. See the backend README for setup instructions.
+**Note**: This frontend requires the AI Query Assistant backend to be running on port 3001. See the backend README for setup instructions.
