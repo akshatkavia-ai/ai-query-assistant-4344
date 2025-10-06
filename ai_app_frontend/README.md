@@ -44,24 +44,32 @@ ai_app_frontend/
 
 ## Environment Variables
 
-The frontend requires **only one** environment variable for local development:
+The frontend requires **only one** environment variable:
 
-| Variable | Description | Local Value |
-|----------|-------------|-------------|
-| `REACT_APP_BACKEND_URL` | URL of the backend API server | `http://localhost:3001` |
+| Variable | Description | Example Values |
+|----------|-------------|----------------|
+| `REACT_APP_BACKEND_URL` | Base URL of the backend API server (without /docs) | `http://localhost:3001` or `https://your-backend.com` |
 
 **Important Notes:**
 - All React environment variables must start with `REACT_APP_`
 - **Changes to `.env` REQUIRE restarting the development server** (Ctrl+C then `npm start`)
 - The `.env` file should contain ONLY `REACT_APP_BACKEND_URL` for frontend
 - Backend-specific variables (DATABASE_URL, GEMINI_API_KEY, CORS_ORIGINS) belong in backend's `.env`
+- Use the **base URL only**, NOT the `/docs` endpoint (e.g., `https://api.example.com:3001` not `https://api.example.com:3001/docs`)
 
 ### Setting Up Environment Variables
 
-The `.env` file is already configured for local development with:
+**For Local Development:**
 ```bash
 REACT_APP_BACKEND_URL=http://localhost:3001
 ```
+
+**For Deployed/Public Environment:**
+```bash
+REACT_APP_BACKEND_URL=https://vscode-internal-34006-beta.beta01.cloud.kavia.ai:3001
+```
+
+Check `.env.example` for reference configuration.
 
 **Sanity Check:** If you see any of these variables in the frontend `.env`, **remove them**:
 - ❌ `REACT_APP_GEMINI_API_KEY` (belongs in backend)
@@ -272,16 +280,23 @@ The frontend handles various error scenarios:
 
 **Solutions:**
 
-1. **Verify backend is running on port 3001:**
+1. **Verify backend is accessible:**
    ```bash
+   # For local development:
    curl http://localhost:3001/health
+   
+   # For deployed environment:
+   curl https://vscode-internal-34006-beta.beta01.cloud.kavia.ai:3001/health
+   
    # Should return: {"status":"healthy",...}
    ```
 
-2. **Check frontend .env has correct backend URL:**
+2. **Check frontend .env has correct backend base URL (no /docs):**
    ```bash
    cat .env
-   # Should show: REACT_APP_BACKEND_URL=http://localhost:3001
+   # For local: REACT_APP_BACKEND_URL=http://localhost:3001
+   # For deployed: REACT_APP_BACKEND_URL=https://vscode-internal-34006-beta.beta01.cloud.kavia.ai:3001
+   # WRONG: https://....:3001/docs (don't include /docs)
    ```
 
 3. **Restart frontend after changing .env (MANDATORY):**
