@@ -5,17 +5,19 @@
  * Configuration:
  * - Uses REACT_APP_BACKEND_URL environment variable
  * - Default fallback: http://localhost:3001
- * - Includes timeout and error handling for network issues
+ * - Includes proper error handling for network issues
  * 
  * Important: Restart the React dev server after changing .env variables
  */
 
-// Get backend URL from environment variable with fallback
-const API_BASE_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:3001';
+// Get backend URL from environment variable with fallback, remove trailing slash
+const API_BASE_URL = (process.env.REACT_APP_BACKEND_URL || 'http://localhost:3001').replace(/\/$/, '');
 
-// Log the API URL being used (helps with debugging)
-console.log('API Base URL:', API_BASE_URL);
-=======
+// Log once (avoid noisy logs during dev HMR)
+if (typeof window !== 'undefined' && !window.__API_BASE_URL_LOGGED__) {
+  console.log('API Base URL:', API_BASE_URL);
+  window.__API_BASE_URL_LOGGED__ = true;
+}
 
 // PUBLIC_INTERFACE
 /**
@@ -25,49 +27,36 @@ console.log('API Base URL:', API_BASE_URL);
  * @throws {Error} If the request fails or returns an error
  */
 export async function askQuestion(question) {
+  const url = `${API_BASE_URL}/ask`;
   try {
-    const response = await fetch(`${API_BASE_URL}/ask`, {
+    const res = await fetch(url, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ question }),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ question })
     });
 
-    // Handle non-JSON responses
-    const contentType = response.headers.get('content-type');
-    if (!contentType || !contentType.includes('application/json')) {
-      throw new Error('Server returned non-JSON response. Please check the backend service.');
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`API error ${res.status}: ${text}`);
     }
 
-    const data = await response.json();
-
-    // Handle HTTP errors
-    if (!response.ok) {
-      // Check if error response has expected format
-      if (data.error) {
-        throw new Error(data.error);
-      } else if (data.detail) {
-        throw new Error(data.detail);
-      } else {
-        throw new Error(`Server error: ${response.status} ${response.statusText}`);
-      }
-    }
-
+    const data = await res.json();
+    
     // Validate response structure
     if (!data.answer) {
       throw new Error('Invalid response format from server');
     }
-
+    
     return data;
-  } catch (error) {
+  } catch (err) {
+    console.error('askQuestion failed:', err);
+    
     // Handle network errors
-    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+    if (err.name === 'TypeError' && err.message.includes('fetch')) {
       throw new Error('Cannot connect to backend. Please ensure the backend service is running.');
     }
     
-    // Re-throw other errors
-    throw error;
+    throw err;
   }
 }
 
@@ -79,7 +68,7 @@ export async function askQuestion(question) {
  */
 export async function healthCheck() {
   try {
-    const response = await fetch(`${API_BASE_URL}/`, {
+    const response = await fetch(`${API_BASE_URL}/health`, {
       method: 'GET',
     });
 
@@ -95,3 +84,5 @@ export async function healthCheck() {
     throw error;
   }
 }
+
+export default { askQuestion, healthCheck };
