@@ -1,0 +1,131 @@
+.response-display {
+  background: var(--surface);
+  border: 2px solid var(--primary);
+  border-radius: 20px;
+  padding: 30px;
+  box-shadow: 0 10px 40px var(--shadow);
+  animation: slideIn 0.5s ease-out;
+}
+
+.response-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid var(--border);
+}
+
+.response-title {
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.response-icon {
+  font-size: 1.8rem;
+  display: inline-block;
+  animation: glow 2s ease-in-out infinite;
+}
+
+@keyframes glow {
+  0%, 100% {
+    filter: drop-shadow(0 0 5px var(--primary));
+  }
+  50% {
+    filter: drop-shadow(0 0 15px var(--primary));
+  }
+}
+
+.response-timestamp {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.response-content {
+  margin: 25px 0;
+  padding: 20px;
+  background: rgba(15, 23, 42, 0.5);
+  border-radius: 12px;
+  border-left: 4px solid var(--primary);
+}
+
+.response-text {
+  font-size: 1.1rem;
+  line-height: 1.8;
+  color: var(--text);
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.response-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 15px;
+  border-top: 2px solid var(--border);
+}
+
+.response-id {
+  font-size: 0.85rem;
+  color: var(--secondary);
+  font-weight: 700;
+  padding: 6px 12px;
+  background: rgba(245, 158, 11, 0.1);
+  border-radius: 8px;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .response-display {
+    padding: 20px;
+  }
+
+  .response-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .response-title {
+    font-size: 1.3rem;
+  }
+
+  .response-icon {
+    font-size: 1.5rem;
+  }
+
+  .response-content {
+    padding: 15px;
+  }
+
+  .response-text {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .response-display {
+    padding: 15px;
+    border-radius: 16px;
+  }
+
+  .response-title {
+    font-size: 1.2rem;
+  }
+
+  .response-timestamp {
+    font-size: 0.8rem;
+  }
+
+  .response-text {
+    font-size: 0.95rem;
+    line-height: 1.6;
+  }
+}
